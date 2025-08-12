@@ -1,0 +1,55 @@
+import discord
+import re
+import asyncio
+from datetime import datetime
+
+TOKEN = "SEM_DEJ_SVŮJ_TOKEN"
+CHANNEL_ID = 123456789012345678  # ID kanálu, kam bude posílat žebříček
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.messages = True
+
+client = discord.Client(intents=intents)
+
+scores = {}  # {uživatel: číslo}
+
+async def reset_scores():
+    """Každý měsíc smaže skóre."""
+    while True:
+        now = datetime.now()
+        if now.day == 1 and now.hour == 0 and now.minute == 0:
+            scores.clear()
+            print("📅 Skóre resetováno")
+            channel = client.get_channel(CHANNEL_ID)
+            if channel:
+                await channel.send("🔄 Měsíční reset žebříčku!")
+        await asyncio.sleep(60)
+
+def generate_leaderboard():
+    sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    lines = [f"{i+1}. {user} - {score}" for i, (user, score) in enumerate(sorted_scores)]
+    return "\n".join(lines) if lines else "Žádná data."
+
+@client.event
+async def on_ready():
+    print(f"Přihlášen jako {client.user}")
+    client.loop.create_task(reset_scores())
+
+@client.event
+async def on_message(message):
+    if message.author.bot:
+        return
+
+    # Najdi první číslo ve zprávě
+    match = re.search(r"\d+", message.content)
+    if match:
+        number = int(match.group())
+        scores[str(message.author)] = number
+
+        # Pošli/aktualizuj žebříček
+        channel = client.get_channel(CHANNEL_ID)
+        if channel:
+            await channel.send(f"📊 **Aktuální žebříček:**\n{generate_leaderboard()}")
+
+client.run(TOKEN)
