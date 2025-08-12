@@ -3,8 +3,8 @@ import re
 import asyncio
 from datetime import datetime
 
-TOKEN = "SEM_DEJ_SVŮJ_TOKEN"
-CHANNEL_ID = 123456789012345678  # ID kanálu, kam bude posílat žebříček
+TOKEN = "https://discord.com/oauth2/authorize?client_id=1404938131983171714&permissions=68608&integration_type=0&scope=bot+applications.commands"
+CHANNEL_ID = 📽-soutěže-2025  # ID kanálu, kam bude posílat žebříček
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -53,3 +53,4 @@ async def on_message(message):
             await channel.send(f"📊 **Aktuální žebříček:**\n{generate_leaderboard()}")
 
 client.run(TOKEN)
+
